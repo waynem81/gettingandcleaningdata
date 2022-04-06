@@ -18,7 +18,7 @@ activityLabels <- fread("C:/Users/Wayne Mogel/Downloads/UCI HAR Dataset/activity
 features
 activityLabels
 
-xtrain_data <- fread(xtrain_path)
+xtrain_data <- read.table(xtrain_path)
 ytrain_data <- fread(ytrain_path)
 subject_train_data <- fread(subject_train)
 
@@ -57,8 +57,19 @@ head(merge_all, 10)
 
 #getting the mean and std
 columns <- colnames(merge_all)
-mean_std <- (grepl("activityId" , columns) | grepl("subjectId" , columns) | grepl("mean.." , columns) | grepl("std.." , columns))
+columnsToKeep = (grepl("activityID" , columns) | grepl("subjectID" , columns) | grepl("mean.." , columns) | grepl("std.." , columns))
 
-subMeanStd <- merge_all[, mean_std == TRUE]
+#subset of matching columns where mean or std are found
+subMeanStd <- merge_all[, ..columnsToKeep]
 
 head(subMeanStd, 10)
+
+#get labels
+activities <- merge(subMeanStd, activityLabels, by='activityID', all.x=TRUE)
+
+#create the tidy dataset
+tidySet <- aggregate(. ~subjectID + activityID, activities, mean)
+tidySet <- tidySet[order(tidySet$subjectID, tidySet$activityID),]
+
+#produce text file
+write.table(tidySet, "C:\\Users\\Wayne Mogel\\OneDrive\\Documents\\Final_Dataset.txt", row.name=FALSE)
